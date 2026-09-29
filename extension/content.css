@@ -1,0 +1,12 @@
+/* PrivyLens AI — Injected Content Script Styles */
+
+#privylens-detection-host {
+  position: fixed !important;
+  top: 24px !important;
+  right: 24px !important;
+  z-index: 2147483647 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  pointer-events: auto !important;
+}
+
+/* Animations inside Shadow DOM are styled within content.js */

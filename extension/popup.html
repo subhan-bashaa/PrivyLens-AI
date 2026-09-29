@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PrivyLens AI</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="logo-icon">🛡️</div>
+        <div>
+          <div class="brand-title">PrivyLens AI</div>
+          <div class="brand-subtitle">Real-Time Privacy Shield</div>
+        </div>
+      </div>
+      <span class="badge-pro">PRO</span>
+    </header>
+
+    <!-- Current Tab Inspector -->
+    <section class="site-card">
+      <div class="site-header">
+        <div class="site-info">
+          <span class="site-dot"></span>
+          <span class="site-domain" id="site-domain">Detecting tab...</span>
+        </div>
+        <span class="risk-badge" id="risk-badge">Evaluating</span>
+      </div>
+
+      <div class="score-row">
+        <div class="score-circle">
+          <span class="score-value" id="trust-score">--</span>
+          <span class="score-max">/10</span>
+        </div>
+        <div class="score-details">
+          <div class="score-headline" id="score-headline">Site Privacy Rating</div>
+          <div class="score-subtext" id="score-subtext">Click analyze to run full AI audit</div>
+        </div>
+      </div>
+
+      <!-- Person Type / Persona Selector -->
+      <div class="persona-section">
+        <div class="persona-header">
+          <span class="persona-title">PERSON TYPE / PERSONA</span>
+          <span class="persona-tag">Tailored Audit</span>
+        </div>
+        <div class="persona-chips" id="persona-chips">
+          <button type="button" class="persona-chip active" data-persona="student">
+            <span class="chip-icon">🎓</span>
+            <span class="chip-text">Student</span>
+          </button>
+          <button type="button" class="persona-chip" data-persona="parent">
+            <span class="chip-icon">👨‍👩‍👧</span>
+            <span class="chip-text">Parent</span>
+          </button>
+          <button type="button" class="persona-chip" data-persona="employee">
+            <span class="chip-icon">💼</span>
+            <span class="chip-text">Employee</span>
+          </button>
+          <button type="button" class="persona-chip" data-persona="business">
+            <span class="chip-icon">🏢</span>
+            <span class="chip-text">Business</span>
+          </button>
+          <button type="button" class="persona-chip" data-persona="general">
+            <span class="chip-icon">👤</span>
+            <span class="chip-text">General</span>
+          </button>
+        </div>
+        <div class="persona-desc" id="persona-desc">
+          Audits EdTech data, academic surveillance, and device telemetry
+        </div>
+      </div>
+
+      <button id="btn-analyze" class="btn-analyze">
+        <div class="btn-analyze-content">
+          <span class="btn-main-text" id="btn-analyze-text">Analyze as Student</span>
+          <span class="btn-sub-text">Proceed to Login & Webpage</span>
+        </div>
+        <span class="arrow">→</span>
+      </button>
+    </section>
+
+    <!-- Features / Toggles -->
+    <section class="settings-section">
+      <div class="setting-item">
+        <div>
+          <div class="setting-title">Auto-Detect Privacy Policies</div>
+          <div class="setting-desc">Slide-in popup when browsing legal pages</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="toggle-policy" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-item">
+        <div>
+          <div class="setting-title">Auto-Detect Cookie Banners</div>
+          <div class="setting-desc">Pre-warn before clicking accept all</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="toggle-cookies" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Footer Links -->
+    <footer class="footer">
+      <button id="btn-open-dashboard" class="link-btn">Open Web Dashboard</button>
+      <span class="separator">•</span>
+      <button id="btn-clear-mutes" class="link-btn">Reset Mutes</button>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
