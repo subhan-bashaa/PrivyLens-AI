@@ -1,9 +1,15 @@
 import { Sparkles } from 'lucide-react';
-import { POLICY_SUGGESTIONS } from '../../data/mockChatData';
+
+const STATUTORY_SUGGESTIONS = [
+  'What personal data does this service collect and share with third parties?',
+  'Can I request complete deletion or correction of my data under DPDP Act 2023?',
+  'Does this service track my location or use behavioral advertising cookies?',
+  'How is my data protected if a security incident or breach occurs?',
+  'Are parental consent and child data protections enforced under DPDP Section 9?',
+];
 
 const ChatSuggestions = ({ activePolicyId = 'global', onSelectSuggestion }) => {
-  const suggestions =
-    POLICY_SUGGESTIONS[activePolicyId] || POLICY_SUGGESTIONS.global;
+  const suggestions = STATUTORY_SUGGESTIONS;
 
   return (
     <div className="space-y-1.5 p-3 bg-background-subtle/70 rounded-2xl border border-border/80">

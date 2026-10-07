@@ -22,7 +22,7 @@ const INDEXED_SERVICES = [
     id: 'instagram',
     name: 'Instagram',
     category: 'Social Media',
-    url: 'https://help.instagram.com/155833707900388',
+    url: 'https://privacycenter.instagram.com/policy',
     lastChecked: 'March 2026',
     popular: true,
   },

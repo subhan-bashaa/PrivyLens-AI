@@ -1,31 +1,31 @@
 import { FileSearch, Eye, ShieldAlert, FileBarChart } from 'lucide-react';
 
-const UserStatsOverview = ({ user }) => {
+const UserStatsOverview = ({ user, stats: liveStats }) => {
   const stats = [
     {
       label: 'Policies Analyzed',
-      value: user?.analyzedCount || 12,
+      value: liveStats?.totalPolicies ?? user?.analyzedCount ?? 0,
       icon: FileSearch,
       color: 'text-primary',
       bg: 'bg-primary/10',
     },
     {
       label: 'Monitored Services',
-      value: user?.monitoredPoliciesCount || 6,
+      value: liveStats?.monitoredPolicies ?? user?.monitoredPoliciesCount ?? 0,
       icon: Eye,
       color: 'text-secondary',
       bg: 'bg-secondary/10',
     },
     {
-      label: 'Red Flags Identified',
-      value: user?.redFlagsPrevented || 28,
+      label: 'Unread Risk Alerts',
+      value: liveStats?.unreadAlerts ?? user?.redFlagsPrevented ?? 0,
       icon: ShieldAlert,
       color: 'text-warning',
       bg: 'bg-warning/10',
     },
     {
       label: 'Audit Reports Exported',
-      value: user?.reportsCount || 5,
+      value: liveStats?.reportsCount ?? user?.reportsCount ?? 0,
       icon: FileBarChart,
       color: 'text-emerald-500',
       bg: 'bg-emerald-500/10',

@@ -120,20 +120,12 @@ PrivyLens-AI/
 │       ├── index.css                            # Tailwind CSS v4 imports, custom tokens & glassmorphism
 │       │
 │       ├── services/                            # Frontend API & service layer
-│       │   └── api.js                           # Axios client with auth interceptors & mock fallback stubs
+│       │   └── api.js                           # Axios client with auth interceptors connected to live Node.js/Neon backend
 │       │
 │       ├── context/                             # Global state providers (Auth, Chat, Theme)
-│       │   ├── AuthContext.jsx                  # User login state & session persistence
-│       │   ├── ChatContext.jsx                  # AI Assistant conversation state & grounded citations
+│       │   ├── AuthContext.jsx                  # Real JWT authentication & session persistence with Chrome Extension sync
+│       │   ├── ChatContext.jsx                  # Grounded RAG AI Assistant conversation state & statutory citations
 │       │   └── ThemeContext.jsx                 # Cyber Emerald dark/light mode toggle provider
-│       │
-│       ├── data/                                # Mock datasets for deterministic local simulation
-│       │   ├── mockPolicies.js                  # Realistic policies (WhatsApp, Spotify, Instagram, etc.)
-│       │   ├── mockVersions.js                  # Side-by-side policy version diffs (2024 vs 2026 revisions)
-│       │   ├── mockAlerts.js                    # Policy drift notifications & critical severity warnings
-│       │   ├── mockMonitoring.js                # Monitored domain metrics, scan frequencies & health scores
-│       │   ├── mockChatData.js                  # Pre-grounded Q&A prompt templates & citation snippets
-│       │   └── mockReports.js                   # Audit-ready compliance report exports
 │       │
 │       ├── pages/                               # Routed view components (17 Pages)
 │       │   ├── Landing.jsx                      # High-conversion public landing page with live simulator

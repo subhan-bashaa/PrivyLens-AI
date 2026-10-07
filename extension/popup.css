@@ -395,3 +395,124 @@ input:checked + .slider:before {
   color: #475569;
   font-size: 10px;
 }
+
+/* Simple Summary Card in Popup */
+.simple-summary-card {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.simple-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #10B981;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.simple-summary-p {
+  font-size: 11px;
+  color: #CBD5E1;
+  line-height: 1.45;
+}
+
+.simple-highlights {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.highlight-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 10.5px;
+  color: #94A3B8;
+  line-height: 1.35;
+}
+
+.highlight-badge {
+  font-weight: 700;
+  color: #F8FAFC;
+  white-space: nowrap;
+}
+
+/* Want Extra Information? Callout Banner */
+.extra-info-banner {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.extra-info-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.extra-info-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.extra-info-title {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #60A5FA;
+  letter-spacing: -0.1px;
+}
+
+.extra-info-desc {
+  font-size: 10px;
+  color: #94A3B8;
+  line-height: 1.35;
+  margin-top: 1px;
+}
+
+.btn-extra-web {
+  width: 100%;
+  background: #3B82F6;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.btn-extra-web:hover {
+  background: #2563EB;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.btn-extra-web:active {
+  transform: translateY(0);
+}
+
+.btn-external-icon {
+  font-size: 12px;
+  font-weight: 800;
+}
+

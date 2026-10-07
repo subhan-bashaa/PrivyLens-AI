@@ -20,6 +20,7 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useGoogleAuthPrompt } from '../../hooks/useGoogleAuthPrompt';
 
 const ROLES = [
   'Student',
@@ -31,7 +32,8 @@ const ROLES = [
 ];
 
 const AuthPopupCard = ({ initialMode = 'login' }) => {
-  const { login, register, loginWithGoogle, isLoading } = useAuth();
+  const { login, register, isLoading } = useAuth();
+  const { triggerGoogleSignIn, isGoogleLoading } = useGoogleAuthPrompt();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -42,7 +44,8 @@ const AuthPopupCard = ({ initialMode = 'login' }) => {
   const targetUrl = searchParams.get('url');
   const incomingPersona = searchParams.get('persona');
   const autoAnalyze = searchParams.get('autoAnalyze') || 'true';
-  const shouldOpen = searchParams.get('open') === 'true' || Boolean(targetUrl) || Boolean(incomingPersona);
+  const redirectParam = searchParams.get('redirect');
+  const shouldOpen = searchParams.get('open') === 'true' || Boolean(targetUrl) || Boolean(incomingPersona) || Boolean(redirectParam);
   const [isOpen, setIsOpen] = useState(shouldOpen);
   const [mode, setMode] = useState(initialMode); // 'login' | 'register'
 
@@ -97,14 +100,6 @@ const AuthPopupCard = ({ initialMode = 'login' }) => {
     window.history.replaceState(null, '', newMode === 'login' ? '/login' : '/register');
   };
 
-  // Demo autofill for quick review
-  const handleFillDemo = () => {
-    setLoginData({
-      email: 'subha@example.com',
-      password: 'password123',
-    });
-    setError('');
-  };
 
   // Password checks for Register
   const passwordChecks = [
@@ -125,10 +120,17 @@ const AuthPopupCard = ({ initialMode = 'login' }) => {
       : 'bg-emerald-500';
 
   const getDestinationUrl = () => {
+    if (redirectParam) {
+      try {
+        return decodeURIComponent(redirectParam);
+      } catch {
+        return redirectParam;
+      }
+    }
     if (targetUrl) {
       return `/analyze?url=${encodeURIComponent(targetUrl)}&persona=${encodeURIComponent(incomingPersona || 'student')}&autoAnalyze=${autoAnalyze}`;
     }
-    return searchParams.get('redirect') || '/dashboard';
+    return '/dashboard';
   };
 
   const handleLoginSubmit = async (e) => {
@@ -173,10 +175,13 @@ const AuthPopupCard = ({ initialMode = 'login' }) => {
 
   const handleGoogleAuth = async () => {
     try {
-      await loginWithGoogle();
+      setError('');
+      await triggerGoogleSignIn({
+        role: mode === 'register' ? registerData.role : (incomingPersona || 'Student'),
+      });
       navigate(getDestinationUrl());
-    } catch {
-      setError('Google authentication failed. Please try again.');
+    } catch (err) {
+      setError(err?.message || 'Google authentication failed. Please try again.');
     }
   };
 
@@ -438,22 +443,10 @@ const AuthPopupCard = ({ initialMode = 'login' }) => {
                   </div>
                 )}
 
-                {/* Title & Demo Pill */}
-                <div className="flex items-center justify-between gap-2 mb-3.5">
-                  <div>
-                    <h2 className="text-xl font-black text-white tracking-tight">Sign In</h2>
-                    <p className="text-xs text-gray-400">Access your monitored policies & privacy dashboard.</p>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleFillDemo}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-emerald-300 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 rounded-full transition-all duration-200 cursor-pointer shrink-0 shadow-sm hover:scale-105 active:scale-95 group"
-                    title="Click to prefill demo credentials"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                    Demo
-                  </button>
+                {/* Title */}
+                <div className="mb-3.5">
+                  <h2 className="text-xl font-black text-white tracking-tight">Sign In</h2>
+                  <p className="text-xs text-gray-400">Access your monitored policies & privacy dashboard.</p>
                 </div>
 
                 {/* Login Form Fields */}
@@ -553,16 +546,20 @@ const AuthPopupCard = ({ initialMode = 'login' }) => {
                   <button
                     type="button"
                     onClick={handleGoogleAuth}
-                    disabled={isLoading}
-                    className="w-full flex items-center justify-center gap-2.5 py-2 px-3 text-xs font-semibold text-gray-200 bg-[#070D16] hover:bg-[#101928] border border-gray-800 hover:border-emerald-500/40 rounded-xl cursor-pointer shadow-sm transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] group"
+                    disabled={isLoading || isGoogleLoading}
+                    className="w-full flex items-center justify-center gap-2.5 py-2 px-3 text-xs font-semibold text-gray-200 bg-[#070D16] hover:bg-[#101928] border border-gray-800 hover:border-emerald-500/40 rounded-xl cursor-pointer shadow-sm transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] group disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <svg className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" viewBox="0 0 24 24">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                    </svg>
-                    Continue with Google
+                    {isGoogleLoading ? (
+                      <div className="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <svg className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                      </svg>
+                    )}
+                    <span>{isGoogleLoading ? 'Connecting to Google...' : 'Continue with Google'}</span>
                   </button>
 
                   <p className="text-center text-xs text-gray-400 mt-3">
@@ -850,16 +847,20 @@ const AuthPopupCard = ({ initialMode = 'login' }) => {
                   <button
                     type="button"
                     onClick={handleGoogleAuth}
-                    disabled={isLoading}
-                    className="w-full flex items-center justify-center gap-2.5 py-1.5 px-3 text-xs font-semibold text-gray-200 bg-[#070D16] hover:bg-[#101928] border border-gray-800 hover:border-emerald-500/40 rounded-xl cursor-pointer shadow-sm transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] group"
+                    disabled={isLoading || isGoogleLoading}
+                    className="w-full flex items-center justify-center gap-2.5 py-1.5 px-3 text-xs font-semibold text-gray-200 bg-[#070D16] hover:bg-[#101928] border border-gray-800 hover:border-emerald-500/40 rounded-xl cursor-pointer shadow-sm transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] group disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <svg className="w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110" viewBox="0 0 24 24">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                    </svg>
-                    Sign up with Google
+                    {isGoogleLoading ? (
+                      <div className="w-3.5 h-3.5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <svg className="w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                      </svg>
+                    )}
+                    <span>{isGoogleLoading ? 'Connecting...' : 'Sign up with Google'}</span>
                   </button>
 
                   <p className="text-center text-xs text-gray-400 mt-2">

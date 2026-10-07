@@ -21,6 +21,10 @@ import {
   Cookie,
   ChevronRight,
   BrainCircuit,
+  Share2,
+  Gauge,
+  RefreshCw,
+  Scale,
 } from 'lucide-react';
 import LandingNavbar from '../components/layout/LandingNavbar';
 import Footer from '../components/layout/Footer';
@@ -42,6 +46,59 @@ const Chrome = ({ className = 'w-5 h-5' }) => (
     <line x1="3.95" y1="6.06" x2="8.54" y2="14" />
     <line x1="10.88" y1="21.94" x2="15.46" y2="14" />
   </svg>
+);
+
+/* ============================================
+   Keyword Marquee Component — Infinite Right-to-Left
+   ============================================ */
+const MARQUEE_ITEMS = [
+  { label: 'Privacy Analysis', Icon: ShieldCheck },
+  { label: 'AI Risk Score', Icon: Sparkles },
+  { label: 'Policy Insights', Icon: FileSearch },
+  { label: 'Cookie Detection', Icon: Cookie },
+  { label: 'Tracking Detection', Icon: Eye },
+  { label: 'Data Sharing', Icon: Share2 },
+  { label: 'Privacy Alerts', Icon: Bell },
+  { label: 'Risk Assessment', Icon: Gauge },
+  { label: 'Policy Monitoring', Icon: RefreshCw },
+  { label: 'Compliance Check', Icon: Scale },
+];
+
+const KeywordCard = ({ label, Icon }) => (
+  <div className="flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl bg-card/60 border border-border/60 backdrop-blur-sm shadow-sm shadow-primary/5 flex-shrink-0">
+    <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary/70 flex-shrink-0" />
+    <span className="text-[11px] sm:text-xs font-medium text-text-secondary whitespace-nowrap tracking-wide">
+      {label}
+    </span>
+  </div>
+);
+
+const KeywordMarquee = () => (
+  <div
+    className="relative w-full overflow-hidden select-none pointer-events-none"
+    aria-hidden="true"
+  >
+    {/* Edge fade masks */}
+    <div
+      className="absolute inset-0 z-10 pointer-events-none"
+      style={{
+        background:
+          'linear-gradient(to right, var(--color-page-bg) 0%, transparent 8%, transparent 92%, var(--color-page-bg) 100%)',
+      }}
+    />
+
+    {/* Scrolling track — items are duplicated for seamless looping */}
+    <div className="keyword-marquee-track">
+      {/* First copy */}
+      {MARQUEE_ITEMS.map((item) => (
+        <KeywordCard key={`a-${item.label}`} label={item.label} Icon={item.Icon} />
+      ))}
+      {/* Second copy (for seamless infinite loop) */}
+      {MARQUEE_ITEMS.map((item) => (
+        <KeywordCard key={`b-${item.label}`} label={item.label} Icon={item.Icon} />
+      ))}
+    </div>
+  </div>
 );
 
 /* ============================================
@@ -79,7 +136,7 @@ const Hero = () => (
       </p>
 
       {/* CTA Buttons */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-fade-in">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 animate-fade-in">
         <Link
           to="/register"
           className="
@@ -105,6 +162,11 @@ const Hero = () => (
           <Chrome className="w-5 h-5 text-primary" />
           Install Extension
         </a>
+      </div>
+
+      {/* ===== Keyword Marquee ===== */}
+      <div className="mb-10 animate-fade-in">
+        <KeywordMarquee />
       </div>
 
       {/* Hero Visual — Floating Dashboard Preview */}
@@ -176,62 +238,180 @@ const Hero = () => (
 );
 
 /* ============================================
-   Section: Problem
+   Section: Problem (Scroll-Driven Stack Deck Style)
    ============================================ */
-const Problem = () => (
-  <section className="py-24 bg-card">
-    <div className="max-w-7xl mx-auto px-6">
-      <div className="text-center mb-16">
-        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-danger-light text-danger-dark text-xs font-semibold mb-4">
-          <AlertTriangle className="w-3.5 h-3.5" />
-          The Problem
-        </span>
-        <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-          Privacy Policies Are Designed to Confuse
-        </h2>
-        <p className="text-text-secondary max-w-2xl mx-auto text-lg">
-          The average privacy policy is 4,000+ words of dense legal language.
-          Nobody reads them — but everyone clicks "Accept."
-        </p>
-      </div>
+const Problem = () => {
+  const PROBLEM_CARDS = [
+    {
+      id: 'problem-01',
+      step: '01',
+      stat: '4,000+',
+      label: 'Average Words',
+      title: '4,000+ Average Words',
+      desc: 'Most privacy policies are longer than the US Constitution. A typical policy requires 45+ minutes of legal deciphering that nobody has time to read.',
+      icon: FileText,
+      tag1: 'VOLUME',
+      tag2: 'EXCESSIVE',
+      tag2Color: 'bg-danger/15 text-danger border-danger/30',
+      highlight: '45+ minutes required to read dense legal clauses',
+      meta: 'Industry Benchmark: 4,000 to 7,500 words',
+      personaAvatars: ['bg-red-500', 'bg-orange-500', 'bg-amber-500'],
+    },
+    {
+      id: 'problem-02',
+      step: '02',
+      stat: '91%',
+      label: 'Don\'t Read',
+      title: "91% Don't Read",
+      desc: 'Users accept privacy terms without reading a single word, routinely surrendering sensitive biometric, location, and behavioral tracking permissions.',
+      icon: Users,
+      tag1: 'BEHAVIOR',
+      tag2: 'BLIND TRUST',
+      tag2Color: 'bg-warning/15 text-warning-dark border-warning/30',
+      highlight: 'Users blindly consent to sweeping telemetry rights',
+      meta: '9 out of 10 users click "Accept All"',
+      personaAvatars: ['bg-amber-500', 'bg-yellow-500', 'bg-red-500'],
+    },
+    {
+      id: 'problem-03',
+      step: '03',
+      stat: '73%',
+      label: 'Over-Collect',
+      title: '73% Over-Collect',
+      desc: 'Three out of four digital apps and web services collect significantly more personal data, device identifiers, and network telemetry than needed.',
+      icon: Eye,
+      tag1: 'SURVEILLANCE',
+      tag2: 'HIGH RISK',
+      tag2Color: 'bg-danger/15 text-danger border-danger/30',
+      highlight: 'Unnecessary behavioral telemetry sent to 3rd parties',
+      meta: 'Audited across 5,000+ popular apps',
+      personaAvatars: ['bg-rose-500', 'bg-red-500', 'bg-pink-500'],
+    },
+  ];
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[
-          {
-            icon: FileText,
-            stat: '4,000+',
-            label: 'Average Words',
-            desc: 'Most privacy policies are longer than the US Constitution.',
-          },
-          {
-            icon: Users,
-            stat: '91%',
-            label: 'Don\'t Read',
-            desc: 'Users accept privacy terms without reading a single word.',
-          },
-          {
-            icon: Eye,
-            stat: '73%',
-            label: 'Over-Collect',
-            desc: 'Of apps collect more personal data than they actually need.',
-          },
-        ].map((item) => (
-          <div
-            key={item.label}
-            className="group bg-page-bg rounded-2xl p-8 border border-border hover:border-danger/20 hover:shadow-lg transition-all duration-300"
-          >
-            <div className="w-12 h-12 rounded-xl bg-danger-light flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-              <item.icon className="w-6 h-6 text-danger" />
-            </div>
-            <p className="text-3xl font-extrabold text-text-primary mb-1">{item.stat}</p>
-            <p className="text-sm font-semibold text-danger mb-2">{item.label}</p>
-            <p className="text-sm text-text-tertiary leading-relaxed">{item.desc}</p>
+  const scrollToCard = (id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  return (
+    <section className="py-24 bg-card relative">
+      <div className="max-w-5xl mx-auto px-6">
+        <div className="text-center mb-14">
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-danger-light text-danger-dark text-xs font-semibold mb-4">
+            <AlertTriangle className="w-3.5 h-3.5" />
+            The Problem
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
+            Privacy Policies Are Designed to Confuse
+          </h2>
+          <p className="text-text-secondary max-w-2xl mx-auto text-lg">
+            The average privacy policy is 4,000+ words of dense legal language.
+            Nobody reads them — but everyone clicks &quot;Accept.&quot;
+          </p>
+
+          {/* Quick Deck Filter / Selector Pills */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-8">
+            {PROBLEM_CARDS.map((card) => (
+              <button
+                key={card.id}
+                type="button"
+                onClick={() => scrollToCard(card.id)}
+                className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-page-bg border border-border text-text-secondary hover:text-text-primary hover:border-danger/40 transition-all cursor-pointer shadow-sm"
+              >
+                <span className="text-danger font-bold mr-1.5">{card.step}</span>
+                <span>{card.title}</span>
+              </button>
+            ))}
           </div>
-        ))}
+        </div>
+
+        {/* Scroll-Driven Stacked Card Deck */}
+        <div className="relative space-y-10 pb-16">
+          {PROBLEM_CARDS.map((card, index) => (
+            <div
+              key={card.title}
+              id={card.id}
+              className="sticky transition-all duration-300"
+              style={{
+                top: `calc(105px + ${index * 30}px)`,
+                zIndex: index + 10,
+              }}
+            >
+              <div className="bg-page-bg rounded-[2rem] sm:rounded-[2.5rem] border border-border/80 shadow-2xl shadow-black/25 p-7 sm:p-9 md:p-10 backdrop-blur-xl hover:border-danger/30 transition-all duration-300">
+                {/* Card Header matching reference image */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+                  {/* Left: Circle icon + Title/Stat */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full border-2 border-danger/30 flex items-center justify-center bg-danger-light shrink-0 shadow-sm">
+                      <card.icon className="w-5 h-5 text-danger" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl sm:text-3xl font-extrabold text-text-primary tracking-tight">
+                        {card.title}
+                      </h3>
+                      <span className="text-xs font-semibold text-danger uppercase tracking-wider">
+                        {card.label}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Right: Sleek tag pills matching reference */}
+                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                    <span className="px-3.5 py-1 rounded-xl bg-card border border-border text-[11px] font-bold text-text-tertiary tracking-wider uppercase">
+                      {card.tag1}
+                    </span>
+                    <span
+                      className={`px-3.5 py-1 rounded-xl border text-[11px] font-bold tracking-wider uppercase ${card.tag2Color}`}
+                    >
+                      {card.tag2}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Card Description */}
+                <p className="text-base sm:text-lg text-text-secondary leading-relaxed mb-6 max-w-3xl font-normal">
+                  {card.desc}
+                </p>
+
+                {/* Highlight feature pill */}
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-card/80 border border-border/60 text-xs font-medium text-danger mb-6">
+                  <AlertTriangle className="w-3.5 h-3.5 text-danger shrink-0" />
+                  <span>{card.highlight}</span>
+                </div>
+
+                {/* Card Footer matching screenshot (Avatars on left, Meta note on right) */}
+                <div className="flex items-center justify-between pt-4 border-t border-border/60">
+                  <div className="flex items-center gap-3">
+                    <div className="flex -space-x-2.5 overflow-hidden">
+                      {card.personaAvatars.map((bg, aIdx) => (
+                        <div
+                          key={aIdx}
+                          className={`inline-block w-8 h-8 rounded-full ring-2 ring-page-bg ${bg} flex items-center justify-center text-[10px] font-bold text-white shadow-sm`}
+                        >
+                          {aIdx === 0 ? '!' : aIdx === 1 ? '⚠' : '×'}
+                        </div>
+                      ))}
+                    </div>
+                    <span className="text-xs text-text-tertiary hidden sm:inline-block">
+                      Consumer Privacy Impact
+                    </span>
+                  </div>
+
+                  <div className="text-xs sm:text-sm font-medium text-text-tertiary">
+                    {card.meta}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 /* ============================================
    Section: Solution
@@ -316,140 +496,382 @@ const Solution = () => (
 );
 
 /* ============================================
-   Section: How It Works
+   Section: How It Works (Scroll-Driven Stack Deck Style)
    ============================================ */
-const HowItWorks = () => (
-  <section id="how-it-works" className="py-24 bg-card">
-    <div className="max-w-7xl mx-auto px-6">
-      <div className="text-center mb-16">
-        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
-          <Zap className="w-3.5 h-3.5" />
-          How It Works
-        </span>
-        <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-          From Confusion to Clarity in Seconds
-        </h2>
-        <p className="text-text-secondary max-w-2xl mx-auto text-lg">
-          Three simple steps to understand any privacy policy.
-        </p>
-      </div>
+const HowItWorks = () => {
+  const STEPS = [
+    {
+      id: 'step-01',
+      step: '01',
+      icon: Globe,
+      title: 'Browse Normally',
+      color: 'primary',
+      tag1: 'AUTO-SNIFFER',
+      tag2: 'ZERO EFFORT',
+      tag2Color: 'bg-primary/15 text-primary border-primary/30',
+      desc: 'Our Chrome extension automatically detects privacy policies and cookie consent banners as you browse. No copy-pasting or manual steps needed.',
+      highlight: 'Passive real-time radar runs silently in the background',
+      meta: 'Automated Detection • Zero Configuration',
+      personaAvatars: ['bg-emerald-500', 'bg-teal-500', 'bg-cyan-500'],
+    },
+    {
+      id: 'step-02',
+      step: '02',
+      icon: BrainCircuit,
+      title: 'AI Analyzes',
+      color: 'secondary',
+      tag1: '11 PILLARS',
+      tag2: '1.8S INFERENCE',
+      tag2Color: 'bg-secondary/15 text-secondary border-secondary/30',
+      desc: 'Advanced statutory AI reads and extracts key facts across 45,000+ characters, scoring data collection, tracking, retention, and erasure rights in seconds.',
+      highlight: 'Every finding anchored directly to exact legal clauses',
+      meta: 'NIST Framework & DPDP Act 2023 Benchmarked',
+      personaAvatars: ['bg-blue-500', 'bg-indigo-500', 'bg-purple-500'],
+    },
+    {
+      id: 'step-03',
+      step: '03',
+      icon: ShieldCheck,
+      title: 'You Decide',
+      color: 'accent',
+      tag1: 'TRUST SCORE',
+      tag2: 'VERDICT',
+      tag2Color: 'bg-accent/15 text-accent border-accent/30',
+      desc: 'Get an objective 1–10 Privacy Score, plain-language bullet points, highlighted red flags, and trust recommendations before you accept terms.',
+      highlight: 'Simple summary with one-click deep link to full web audit',
+      meta: 'Informed Consent Without Confusion',
+      personaAvatars: ['bg-cyan-500', 'bg-emerald-500', 'bg-amber-500'],
+    },
+  ];
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {[
-          {
-            step: '01',
-            icon: Globe,
-            title: 'Browse Normally',
-            desc: 'Our Chrome extension automatically detects privacy policies as you browse. No manual steps needed.',
-            color: 'primary',
-          },
-          {
-            step: '02',
-            icon: BrainCircuit,
-            title: 'AI Analyzes',
-            desc: 'Advanced AI reads, extracts, and scores the policy in seconds. Every finding is linked to its source.',
-            color: 'secondary',
-          },
-          {
-            step: '03',
-            icon: ShieldCheck,
-            title: 'You Decide',
-            desc: 'Get a clear summary, privacy score, red flags, and a trust recommendation before you accept.',
-            color: 'accent',
-          },
-        ].map((item) => (
-          <div key={item.step} className="relative group">
-            <div className="bg-page-bg rounded-2xl p-8 border border-border hover:shadow-lg hover:border-primary/20 transition-all duration-300 h-full">
-              {/* Step Number */}
-              <span className={`text-5xl font-extrabold text-${item.color}/10 absolute top-4 right-6`}>
-                {item.step}
-              </span>
-              <div className={`w-14 h-14 rounded-2xl bg-${item.color}/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                <item.icon className={`w-7 h-7 text-${item.color}`} />
-              </div>
-              <h3 className="text-xl font-bold text-text-primary mb-3">{item.title}</h3>
-              <p className="text-sm text-text-tertiary leading-relaxed">{item.desc}</p>
-            </div>
+  const scrollToCard = (id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  return (
+    <section id="how-it-works" className="py-24 bg-card relative">
+      <div className="max-w-5xl mx-auto px-6">
+        <div className="text-center mb-14">
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
+            <Zap className="w-3.5 h-3.5" />
+            How It Works
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
+            From Confusion to Clarity in Seconds
+          </h2>
+          <p className="text-text-secondary max-w-2xl mx-auto text-lg">
+            Three simple steps to understand any privacy policy.
+          </p>
+
+          {/* Quick Deck Filter / Selector Pills */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-8">
+            {STEPS.map((card) => (
+              <button
+                key={card.id}
+                type="button"
+                onClick={() => scrollToCard(card.id)}
+                className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-page-bg border border-border text-text-secondary hover:text-text-primary hover:border-primary/40 transition-all cursor-pointer shadow-sm"
+              >
+                <span className="text-primary font-bold mr-1.5">{card.step}</span>
+                <span>{card.title}</span>
+              </button>
+            ))}
           </div>
-        ))}
+        </div>
+
+        {/* Scroll-Driven Stacked Card Deck */}
+        <div className="relative space-y-10 pb-16">
+          {STEPS.map((stepItem, index) => (
+            <div
+              key={stepItem.title}
+              id={stepItem.id}
+              className="sticky transition-all duration-300"
+              style={{
+                top: `calc(105px + ${index * 30}px)`,
+                zIndex: index + 10,
+              }}
+            >
+              <div className="bg-page-bg rounded-[2rem] sm:rounded-[2.5rem] border border-border/80 shadow-2xl shadow-black/25 p-7 sm:p-9 md:p-10 backdrop-blur-xl hover:border-primary/40 transition-all duration-300">
+                {/* Card Header matching reference image */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+                  {/* Left: Circle icon + Title */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full border-2 border-border/80 flex items-center justify-center bg-card shrink-0 shadow-sm">
+                      <stepItem.icon className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl sm:text-3xl font-extrabold text-text-primary tracking-tight">
+                        {stepItem.title}
+                      </h3>
+                      <span className="text-xs font-bold text-text-tertiary uppercase tracking-wider">
+                        Step {stepItem.step}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Right: Sleek tag pills */}
+                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                    <span className="px-3.5 py-1 rounded-xl bg-card border border-border text-[11px] font-bold text-text-tertiary tracking-wider uppercase">
+                      {stepItem.tag1}
+                    </span>
+                    <span
+                      className={`px-3.5 py-1 rounded-xl border text-[11px] font-bold tracking-wider uppercase ${stepItem.tag2Color}`}
+                    >
+                      {stepItem.tag2}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Card Description */}
+                <p className="text-base sm:text-lg text-text-secondary leading-relaxed mb-6 max-w-3xl font-normal">
+                  {stepItem.desc}
+                </p>
+
+                {/* Highlight feature pill */}
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-card/80 border border-border/60 text-xs font-medium text-text-primary mb-6">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
+                  <span>{stepItem.highlight}</span>
+                </div>
+
+                {/* Card Footer matching screenshot (Avatars on left, Meta note on right) */}
+                <div className="flex items-center justify-between pt-4 border-t border-border/60">
+                  <div className="flex items-center gap-3">
+                    <div className="flex -space-x-2.5 overflow-hidden">
+                      {stepItem.personaAvatars.map((bg, aIdx) => (
+                        <div
+                          key={aIdx}
+                          className={`inline-block w-8 h-8 rounded-full ring-2 ring-page-bg ${bg} flex items-center justify-center text-[10px] font-bold text-white shadow-sm`}
+                        >
+                          {aIdx === 0 ? '1' : aIdx === 1 ? '2' : '3'}
+                        </div>
+                      ))}
+                    </div>
+                    <span className="text-xs text-text-tertiary hidden sm:inline-block">
+                      Autonomous Intelligence Pipeline
+                    </span>
+                  </div>
+
+                  <div className="text-xs sm:text-sm font-medium text-text-tertiary">
+                    {stepItem.meta}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 /* ============================================
-   Section: Key Features
+   Section: Key Features (Scroll-Driven Stack Deck Style)
    ============================================ */
-const KeyFeatures = () => (
-  <section id="features" className="py-24">
-    <div className="max-w-7xl mx-auto px-6">
-      <div className="text-center mb-16">
-        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 text-secondary text-xs font-semibold mb-4">
-          <Sparkles className="w-3.5 h-3.5" />
-          Features
-        </span>
-        <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-          Everything You Need for Privacy Intelligence
-        </h2>
-        <p className="text-text-secondary max-w-2xl mx-auto text-lg">
-          Powerful tools designed to give you complete control over your privacy.
-        </p>
-      </div>
+const KeyFeatures = () => {
+  const FEATURE_CARDS = [
+    {
+      id: 'feature-01',
+      step: '01',
+      title: 'Smart Analysis',
+      desc: 'Analyze any privacy policy by URL, PDF upload, or app search. AI extracts key privacy details, data collection, and sharing practices instantly.',
+      icon: ScanSearch,
+      tag1: 'INGESTION',
+      tag2: 'INSTANT',
+      tag2Color: 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30',
+      highlight: 'URL, PDF & App Name Ingestion',
+      meta: 'Audited in under 1.8s',
+      personaAvatars: ['bg-emerald-500', 'bg-blue-500', 'bg-purple-500'],
+    },
+    {
+      id: 'feature-02',
+      step: '02',
+      title: 'Privacy Trust Score',
+      desc: 'A clear 1–10 score that tells you how privacy-friendly an app or service really is, grounded in NIST and statutory data privacy frameworks.',
+      icon: BarChart3,
+      tag1: 'BENCHMARK',
+      tag2: 'SCORE 1-10',
+      tag2Color: 'bg-amber-500/15 text-amber-600 border-amber-500/30',
+      highlight: 'Deterministic 11-category privacy rating',
+      meta: 'Calibrated across 12,000+ policies',
+      personaAvatars: ['bg-amber-500', 'bg-emerald-500', 'bg-indigo-500'],
+    },
+    {
+      id: 'feature-03',
+      step: '03',
+      title: 'Evidence-Based',
+      desc: 'Every AI finding is linked to the exact clause in the original policy for full transparency. No guesswork or LLM hallucinations.',
+      icon: FileSearch,
+      tag1: 'CITATIONS',
+      tag2: 'VERIFIED',
+      tag2Color: 'bg-blue-500/15 text-blue-600 border-blue-500/30',
+      highlight: '100% Verbatim statutory clause links',
+      meta: 'Full legal transparency',
+      personaAvatars: ['bg-blue-500', 'bg-cyan-500', 'bg-violet-500'],
+    },
+    {
+      id: 'feature-04',
+      step: '04',
+      title: 'Policy Monitoring',
+      desc: 'Automatic monitoring detects changes in policies you care about and alerts you immediately when terms or third-party scopes change.',
+      icon: Eye,
+      tag1: 'SURVEILLANCE',
+      tag2: 'REAL-TIME',
+      tag2Color: 'bg-cyan-500/15 text-cyan-600 border-cyan-500/30',
+      highlight: 'Automated policy drift alerts',
+      meta: 'Continuous background radar',
+      personaAvatars: ['bg-cyan-500', 'bg-emerald-500', 'bg-pink-500'],
+    },
+    {
+      id: 'feature-05',
+      step: '05',
+      title: 'AI Assistant',
+      desc: 'Ask natural language questions about any policy: "Does this app share my location?" or "Can I request account erasure?"',
+      icon: MessageSquare,
+      tag1: 'INTERACTIVE',
+      tag2: 'RAG CHAT',
+      tag2Color: 'bg-purple-500/15 text-purple-600 border-purple-500/30',
+      highlight: 'Context-grounded privacy question answering',
+      meta: 'Powered by Gemini RAG',
+      personaAvatars: ['bg-purple-500', 'bg-blue-500', 'bg-amber-500'],
+    },
+    {
+      id: 'feature-06',
+      step: '06',
+      title: 'Version Comparison',
+      desc: 'See exactly what changed between policy versions with clear diff visualization, highlighted clause revisions, and risk deltas.',
+      icon: Lock,
+      tag1: 'AUDIT TRAIL',
+      tag2: 'DIFF VIEW',
+      tag2Color: 'bg-rose-500/15 text-rose-600 border-rose-500/30',
+      highlight: 'Side-by-side clause additions and removals',
+      meta: 'Historical change timeline',
+      personaAvatars: ['bg-rose-500', 'bg-indigo-500', 'bg-emerald-500'],
+    },
+  ];
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[
-          {
-            icon: ScanSearch,
-            title: 'Smart Analysis',
-            desc: 'Analyze any privacy policy by URL, PDF upload, or app search. AI extracts key privacy details instantly.',
-            color: 'bg-primary/10 text-primary',
-          },
-          {
-            icon: BarChart3,
-            title: 'Privacy Trust Score',
-            desc: 'A clear 1–10 score that tells you how privacy-friendly an app or service really is.',
-            color: 'bg-secondary/10 text-secondary',
-          },
-          {
-            icon: FileSearch,
-            title: 'Evidence-Based',
-            desc: 'Every AI finding is linked to the exact clause in the original policy for full transparency.',
-            color: 'bg-accent/10 text-accent',
-          },
-          {
-            icon: Eye,
-            title: 'Policy Monitoring',
-            desc: 'Automatic monitoring detects changes in policies you care about and alerts you immediately.',
-            color: 'bg-info/10 text-info',
-          },
-          {
-            icon: MessageSquare,
-            title: 'AI Assistant',
-            desc: 'Ask natural language questions about any policy: "Does this app share my location?"',
-            color: 'bg-warning/10 text-warning-dark',
-          },
-          {
-            icon: Lock,
-            title: 'Version Comparison',
-            desc: 'See exactly what changed between policy versions with clear diff visualization.',
-            color: 'bg-danger/10 text-danger',
-          },
-        ].map((feature) => (
-          <div
-            key={feature.title}
-            className="group bg-card rounded-2xl p-7 border border-border hover:shadow-lg hover:border-primary/20 transition-all duration-300"
-          >
-            <div className={`w-12 h-12 rounded-xl ${feature.color} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}>
-              <feature.icon className="w-6 h-6" />
-            </div>
-            <h3 className="text-lg font-semibold text-text-primary mb-2">{feature.title}</h3>
-            <p className="text-sm text-text-tertiary leading-relaxed">{feature.desc}</p>
+  const scrollToCard = (id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  return (
+    <section id="features" className="py-24 relative">
+      <div className="max-w-5xl mx-auto px-6">
+        {/* Section Header */}
+        <div className="text-center mb-14">
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 text-secondary text-xs font-semibold mb-4">
+            <Sparkles className="w-3.5 h-3.5" />
+            Features
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
+            Everything You Need for Privacy Intelligence
+          </h2>
+          <p className="text-text-secondary max-w-2xl mx-auto text-lg">
+            Powerful tools designed to give you complete control over your privacy.
+          </p>
+
+          {/* Quick Deck Filter / Selector Pills */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-8">
+            {FEATURE_CARDS.map((card, idx) => (
+              <button
+                key={card.id}
+                type="button"
+                onClick={() => scrollToCard(card.id)}
+                className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-card border border-border text-text-secondary hover:text-text-primary hover:border-primary/40 transition-all cursor-pointer shadow-sm"
+              >
+                <span className="text-primary font-bold mr-1.5">{card.step}</span>
+                <span>{card.title}</span>
+              </button>
+            ))}
           </div>
-        ))}
+        </div>
+
+        {/* Scroll-Driven Stacked Card Deck */}
+        <div className="relative space-y-10 pb-20">
+          {FEATURE_CARDS.map((feature, index) => (
+            <div
+              key={feature.title}
+              id={feature.id}
+              className="sticky transition-all duration-300"
+              style={{
+                top: `calc(105px + ${index * 30}px)`,
+                zIndex: index + 10,
+              }}
+            >
+              <div className="bg-card rounded-[2rem] sm:rounded-[2.5rem] border border-border/80 shadow-2xl shadow-black/25 p-7 sm:p-9 md:p-10 backdrop-blur-xl hover:border-primary/40 transition-all duration-300">
+                {/* Card Header matching reference image */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+                  {/* Left: Circle icon + Title */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full border-2 border-border/80 flex items-center justify-center bg-page-bg shrink-0 shadow-sm">
+                      <feature.icon className="w-5 h-5 text-primary" />
+                    </div>
+                    <h3 className="text-2xl sm:text-3xl font-extrabold text-text-primary tracking-tight">
+                      {feature.title}
+                    </h3>
+                  </div>
+
+                  {/* Right: Sleek tag pills matching STRATEGY / MEDIUM pills */}
+                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                    <span className="px-3.5 py-1 rounded-xl bg-page-bg border border-border text-[11px] font-bold text-text-tertiary tracking-wider uppercase">
+                      {feature.tag1}
+                    </span>
+                    <span
+                      className={`px-3.5 py-1 rounded-xl border text-[11px] font-bold tracking-wider uppercase ${feature.tag2Color}`}
+                    >
+                      {feature.tag2}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Card Description */}
+                <p className="text-base sm:text-lg text-text-secondary leading-relaxed mb-6 max-w-3xl font-normal">
+                  {feature.desc}
+                </p>
+
+                {/* Highlight feature pill */}
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-page-bg/80 border border-border/60 text-xs font-medium text-text-primary mb-6">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
+                  <span>{feature.highlight}</span>
+                </div>
+
+                {/* Card Footer matching screenshot (Avatars on left, Edited timestamp/tag on right) */}
+                <div className="flex items-center justify-between pt-4 border-t border-border/60">
+                  {/* Overlapping circular avatars */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex -space-x-2.5 overflow-hidden">
+                      {feature.personaAvatars.map((bg, aIdx) => (
+                        <div
+                          key={aIdx}
+                          className={`inline-block w-8 h-8 rounded-full ring-2 ring-card ${bg} flex items-center justify-center text-[10px] font-bold text-white shadow-sm`}
+                        >
+                          {aIdx === 0 ? 'P' : aIdx === 1 ? 'E' : 'U'}
+                        </div>
+                      ))}
+                    </div>
+                    <span className="text-xs text-text-tertiary hidden sm:inline-block">
+                      Personalized Privacy Intelligence
+                    </span>
+                  </div>
+
+                  {/* Right: Timestamp / Meta tag like "Edited 2 days ago" */}
+                  <div className="text-xs sm:text-sm font-medium text-text-tertiary">
+                    {feature.meta}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 /* ============================================
    Section: Chrome Extension

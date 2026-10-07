@@ -80,10 +80,14 @@
     return false;
   }
 
+  let detectedBannerSnippet = '';
+
   function detectCookieBanner() {
     for (const selector of COOKIE_BANNER_SELECTORS) {
       const el = document.querySelector(selector);
       if (el && el.offsetHeight > 20 && window.getComputedStyle(el).display !== 'none') {
+        const text = (el.innerText || '').toLowerCase();
+        detectedBannerSnippet = text;
         return true;
       }
     }
@@ -102,6 +106,18 @@
   function renderDetectionPopup(detectionType) {
     if (document.getElementById('privylens-detection-host')) return;
 
+    // Check if domain is already audited in PrivyLens database
+    chrome.runtime.sendMessage(
+      { type: 'CHECK_DOMAIN_STATUS', domain: currentHost, url: currentUrl },
+      (response) => {
+        buildPopupUI(detectionType, response);
+      }
+    );
+  }
+
+  function buildPopupUI(detectionType, auditResponse) {
+    if (document.getElementById('privylens-detection-host')) return;
+
     const host = document.createElement('div');
     host.id = 'privylens-detection-host';
     document.body.appendChild(host);
@@ -114,8 +130,8 @@
       * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
       
       .privylens-card {
-        width: 320px;
-        background: rgba(15, 23, 42, 0.95);
+        width: 330px;
+        background: rgba(15, 23, 42, 0.96);
         backdrop-filter: blur(16px);
         border: 1px solid rgba(16, 185, 129, 0.4);
         border-radius: 20px;
@@ -176,24 +192,31 @@
         font-size: 15px;
         font-weight: 700;
         color: #FFFFFF;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
         line-height: 1.3;
+      }
+
+      .domain-tag {
+        font-size: 11px;
+        color: #10B981;
+        font-weight: 600;
+        margin-bottom: 8px;
       }
 
       .desc {
         font-size: 12px;
         color: #94A3B8;
         line-height: 1.5;
-        margin-bottom: 14px;
+        margin-bottom: 12px;
       }
 
-      .risk-pill {
+      .status-pill {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background: rgba(245, 158, 11, 0.15);
-        color: #F59E0B;
-        border: 1px solid rgba(245, 158, 11, 0.3);
+        background: rgba(16, 185, 129, 0.15);
+        color: #10B981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
         border-radius: 8px;
         padding: 4px 10px;
         font-size: 11px;
@@ -201,11 +224,17 @@
         margin-bottom: 12px;
       }
 
+      .status-pill.audited {
+        background: rgba(59, 130, 246, 0.15);
+        color: #60A5FA;
+        border-color: rgba(59, 130, 246, 0.3);
+      }
+
       .bullet-list {
         list-style: none;
         font-size: 11px;
         color: #CBD5E1;
-        margin-bottom: 16px;
+        margin-bottom: 14px;
         display: flex;
         flex-direction: column;
         gap: 6px;
@@ -213,16 +242,21 @@
 
       .bullet-list li {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         gap: 6px;
+        line-height: 1.4;
       }
 
       .bullet-dot {
-        width: 4px;
-        height: 4px;
-        background-color: #F59E0B;
+        width: 5px;
+        height: 5px;
+        background-color: #10B981;
         border-radius: 50%;
-      }      .persona-row {
+        margin-top: 5px;
+        shrink: 0;
+      }
+
+      .persona-row {
         margin: 10px 0 8px 0;
         display: flex;
         flex-direction: column;
@@ -303,17 +337,74 @@
         font-size: 10px;
         color: #64748B;
         cursor: pointer;
+        margin-top: 10px;
       }
       .mute-option input { cursor: pointer; accent-color: #10B981; }
     `;
 
-    const isCookie = detectionType === 'cookie';
-    const titleText = isCookie
-      ? "Website Cookie Consent Detected"
-      : "Privacy Policy Detected";
-    const descText = isCookie
-      ? "You're about to accept this website's tracking and cookie parameters."
-      : "Get an AI breakdown of clauses, tracking red flags, and data sharing in 5 sec.";
+    const isAudited = Boolean(auditResponse?.audited && auditResponse?.policy);
+    const auditedPolicy = auditResponse?.policy;
+
+    let titleText = 'Privacy Document Detected';
+    let pillText = 'Shield Active';
+    let pillClass = 'status-pill';
+    let descText = `Official privacy disclosure page detected on ${currentHost}.`;
+    let bullets = [];
+
+    if (isAudited) {
+      const score = parseFloat(auditedPolicy.overall_score || 0).toFixed(1);
+      const risk = (auditedPolicy.risk_level || 'Moderate').toUpperCase();
+      titleText = auditedPolicy.title || 'Audited Privacy Policy';
+      pillText = `★ Risk Score: ${score}/10 (${risk} Risk)`;
+      pillClass = 'status-pill audited';
+      const structured = auditedPolicy.structured_summary || auditedPolicy.persona_explanations?.structured_summary || {};
+      descText = structured.purpose_of_data_use || auditedPolicy.summary || 'Privacy policy audited in your PrivyLens repository.';
+      if (descText.length > 130) descText = descText.slice(0, 130) + '...';
+      bullets = [];
+      if (structured.data_collected) {
+        bullets.push(`📦 Collected: ${structured.data_collected.slice(0, 75)}...`);
+      }
+      if (structured.data_sharing) {
+        bullets.push(`🔄 Sharing: ${structured.data_sharing.slice(0, 75)}...`);
+      }
+      if (structured.data_retention) {
+        bullets.push(`⏳ Retention: ${structured.data_retention.slice(0, 75)}...`);
+      }
+      if (bullets.length === 0) {
+        bullets.push('Deterministic fact extraction & DPDP compliance verified');
+        bullets.push('Continuous automated drift monitoring active');
+      }
+    } else if (detectionType === 'cookie') {
+      titleText = 'Cookie Consent Gate Detected';
+      pillText = '🛡️ Tracking Dialogue Active';
+      descText = `This website is prompting for consent before storing cookies on ${currentHost}.`;
+
+      // Extract real signals from detected banner snippet
+      if (detectedBannerSnippet.includes('advertis') || detectedBannerSnippet.includes('ad ') || detectedBannerSnippet.includes('partner')) {
+        bullets.push('Targeted advertising & partner disclosures found in notice');
+      }
+      if (detectedBannerSnippet.includes('analytic') || detectedBannerSnippet.includes('measure') || detectedBannerSnippet.includes('telemetry')) {
+        bullets.push('Visitor behavior & analytics telemetry specified');
+      }
+      if (detectedBannerSnippet.includes('device') || detectedBannerSnippet.includes('store') || detectedBannerSnippet.includes('access information')) {
+        bullets.push('Device storage access & identifier parameters requested');
+      }
+      if (bullets.length === 0) {
+        bullets.push('Pre-consent checkpoint: inspect privacy obligations before accepting');
+        bullets.push('DPDP Act 2023 Sec 6 requires clear, withdrawal-capable consent');
+      }
+    } else {
+      titleText = 'Privacy Policy Page Detected';
+      pillText = '📄 Legal Document';
+      descText = `Privacy and personal data processing terms identified on ${currentHost}.`;
+      bullets.push(`Page: "${document.title ? document.title.slice(0, 45) : 'Privacy Policy'}"`);
+      bullets.push('11-category weighted risk scoring & DPDP Act compliance audit');
+      bullets.push('Evidence quotes & citations extracted directly from text');
+    }
+
+    const bulletsHtml = bullets
+      .map((b) => `<li><span class="bullet-dot"></span><span>${b}</span></li>`)
+      .join('');
 
     const container = document.createElement('div');
     container.className = 'privylens-card';
@@ -326,19 +417,18 @@
         <button class="close-btn" id="pl-close-btn">&times;</button>
       </div>
 
+      <div class="domain-tag">🌐 ${currentHost}</div>
       <div class="title">${titleText}</div>
       <div class="desc">${descText}</div>
 
-      <div class="risk-pill">⚠️ Moderate Privacy Risk</div>
+      <div class="${pillClass}">${pillText}</div>
 
       <ul class="bullet-list">
-        <li><span class="bullet-dot"></span> Cross-site advertising cookies used</li>
-        <li><span class="bullet-dot"></span> Third-party behavioral telemetry logged</li>
-        <li><span class="bullet-dot"></span> Approximate location data collected</li>
+        ${bulletsHtml}
       </ul>
 
       <div class="persona-row">
-        <div class="persona-label">SELECT YOUR PERSON TYPE:</div>
+        <div class="persona-label">SELECT YOUR PERSONA:</div>
         <div class="persona-buttons" id="pl-persona-buttons">
           <button type="button" class="p-btn active" data-p="student">🎓 Student</button>
           <button type="button" class="p-btn" data-p="parent">👨‍👩‍👧 Parent</button>
@@ -349,8 +439,10 @@
       </div>
 
       <div class="actions">
-        <button class="btn-primary" id="pl-view-summary">Login & Analyze as Student</button>
-        <button class="btn-secondary" id="pl-later-btn">Later</button>
+        <button class="btn-primary" id="pl-view-summary">
+          ${isAudited ? 'View Full Analysis in Web ↗' : 'Analyze on Web App ↗'}
+        </button>
+        <button class="btn-secondary" id="pl-later-btn">Dismiss</button>
       </div>
 
       <label class="mute-option">
@@ -377,7 +469,11 @@
         btn.classList.add('active');
         activePersona = btn.dataset.p;
         const cap = activePersona.charAt(0).toUpperCase() + activePersona.slice(1);
-        summaryBtn.textContent = `Login & Analyze as ${cap}`;
+        if (isAudited) {
+          summaryBtn.textContent = `View Audit (${cap})`;
+        } else {
+          summaryBtn.textContent = `Analyze as ${cap}`;
+        }
       });
     });
 
@@ -404,6 +500,7 @@
       chrome.runtime.sendMessage({
         type: 'OPEN_WEBAPP',
         url: currentUrl,
+        policyId: auditedPolicy?.id || null,
         persona: activePersona,
       });
       dismiss();

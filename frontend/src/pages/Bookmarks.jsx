@@ -16,82 +16,29 @@ import {
   Tag,
 } from 'lucide-react';
 
-const INITIAL_BOOKMARKS = [
-  {
-    id: 'bm-1',
-    policyId: 'whatsapp',
-    policyName: 'WhatsApp',
-    category: 'Data Sharing',
-    clauseTitle: 'Metadata Sharing with Meta Companies',
-    originalText:
-      'We share information globally, both internally within the Meta Companies and externally with our partners and service providers for telemetry and ad optimization across affiliated networks.',
-    explanation:
-      'WhatsApp shares non-content metadata (who you message, when, device identifiers, IP address) with Meta platforms to cross-correlate ad profiles.',
-    riskLevel: 'high',
-    savedAt: '2026-03-08',
-  },
-  {
-    id: 'bm-2',
-    policyId: 'tiktok',
-    policyName: 'TikTok',
-    category: 'Biometrics & Telemetry',
-    clauseTitle: 'Device Fingerprinting & Biometric Telemetry',
-    originalText:
-      'We may collect biometric identifiers and biometric information as defined under U.S. laws, such as faceprints and voiceprints, from your User Content.',
-    explanation:
-      'Aggressive automated biometric scanning extracts facial topography and audio frequency signatures from uploaded video clips.',
-    riskLevel: 'high',
-    savedAt: '2026-03-05',
-  },
-  {
-    id: 'bm-3',
-    policyId: 'spotify',
-    policyName: 'Spotify',
-    category: 'Third-Party Sharing',
-    clauseTitle: 'Commercial Partner Audio Telemetry Sharing',
-    originalText:
-      'We share your streaming habits, listening timestamps, and podcast subscriptions with record labels, advertisers, and audio analytics partners.',
-    explanation:
-      'Your music taste, mood playlists, and playback frequencies are shared with third-party advertising vendors to build demographic profiles.',
-    riskLevel: 'medium',
-    savedAt: '2026-03-02',
-  },
-  {
-    id: 'bm-4',
-    policyId: 'chatgpt',
-    policyName: 'OpenAI ChatGPT',
-    category: 'Data Retention',
-    clauseTitle: 'Model Retraining on Free-Tier Prompts',
-    originalText:
-      'When you use our Services, we may use your Content to train our models unless you opt out through your account data controls or the privacy request portal.',
-    explanation:
-      'Prompts and file uploads on default consumer accounts are ingested into future generative model training corpora unless explicitly disabled in settings.',
-    riskLevel: 'medium',
-    savedAt: '2026-02-28',
-  },
-  {
-    id: 'bm-5',
-    policyId: 'whatsapp',
-    policyName: 'WhatsApp',
-    category: 'User Rights',
-    clauseTitle: 'Right to Data Deletion and Account Erase',
-    originalText:
-      'You may delete your WhatsApp account at any time. It may take up to 90 days from the beginning of the deletion process to delete your WhatsApp information from backup storage.',
-    explanation:
-      'Full purge from cold backups requires up to 90 calendar days. Log data retention may persist longer for statutory regulatory requirements.',
-    riskLevel: 'low',
-    savedAt: '2026-02-20',
-  },
-];
-
 const Bookmarks = () => {
-  const [bookmarks, setBookmarks] = useState(INITIAL_BOOKMARKS);
+  const [bookmarks, setBookmarks] = useState(() => {
+    try {
+      const saved = localStorage.getItem('privylens_bookmarks');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRisk, setSelectedRisk] = useState('All');
   const [toastMessage, setToastMessage] = useState('');
 
   const handleDelete = (id) => {
-    setBookmarks((prev) => prev.filter((b) => b.id !== id));
+    setBookmarks((prev) => {
+      const next = prev.filter((b) => b.id !== id);
+      try {
+        localStorage.setItem('privylens_bookmarks', JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
     setToastMessage('Bookmark removed');
     setTimeout(() => setToastMessage(''), 2500);
   };

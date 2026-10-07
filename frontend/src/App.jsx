@@ -3,8 +3,9 @@ import { AuthProvider } from './context/AuthContext';
 import { ChatProvider } from './context/ChatContext';
 import { ThemeProvider } from './context/ThemeContext';
 
-// Layout
+// Layout & Guards
 import AppLayout from './components/layout/AppLayout';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // Pages
 import Landing from './pages/Landing';
@@ -40,8 +41,14 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
 
-              {/* App Routes — wrapped with sidebar + header layout */}
-              <Route element={<AppLayout />}>
+              {/* App Routes — protected by login guard */}
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                }
+              >
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/analyze" element={<AnalyzePolicy />} />
                 <Route path="/policies" element={<MyPolicies />} />

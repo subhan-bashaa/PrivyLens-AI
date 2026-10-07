@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   FileText,
@@ -38,7 +38,6 @@ const navItems = [
     label: 'Alerts',
     path: '/alerts',
     icon: Bell,
-    badge: 3,
   },
   {
     label: 'Compare Changes',
@@ -78,6 +77,12 @@ const bottomNavItems = [
 const Sidebar = ({ isCollapsed, onToggle }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <aside
@@ -201,14 +206,16 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
               <p className="text-sm font-medium text-text-primary truncate">
                 {user?.name || 'User'}
               </p>
-              <p className="text-xs text-text-tertiary truncate">
-                {user?.accountType || 'Free'} Plan
-              </p>
+              {user?.email && (
+                <p className="text-xs text-text-tertiary truncate">
+                  {user.email}
+                </p>
+              )}
             </div>
           )}
           {!isCollapsed && (
             <button
-              onClick={logout}
+              onClick={handleLogout}
               className="p-1.5 rounded-lg hover:bg-danger-light text-text-tertiary hover:text-danger transition-colors cursor-pointer"
               title="Logout"
               aria-label="Logout"
@@ -217,6 +224,18 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
             </button>
           )}
         </div>
+        {isCollapsed && (
+          <div className="flex justify-center mt-1">
+            <button
+              onClick={handleLogout}
+              className="p-2 rounded-lg hover:bg-danger-light text-text-tertiary hover:text-danger transition-colors cursor-pointer"
+              title="Logout"
+              aria-label="Logout"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Collapse Toggle */}

@@ -1,6 +1,7 @@
 import { Globe, X, Sparkles } from 'lucide-react';
 
 const PRESET_POLICIES = [
+  { name: 'Instagram', url: 'https://privacycenter.instagram.com/policy' },
   { name: 'WhatsApp', url: 'https://www.whatsapp.com/legal/privacy-policy' },
   { name: 'Spotify', url: 'https://www.spotify.com/legal/privacy-policy/' },
   { name: 'OpenAI ChatGPT', url: 'https://openai.com/policies/privacy-policy' },

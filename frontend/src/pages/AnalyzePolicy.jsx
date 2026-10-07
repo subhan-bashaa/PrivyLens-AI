@@ -13,6 +13,7 @@ import {
   User,
   CheckCircle2,
   Sliders,
+  AlertCircle,
 } from 'lucide-react';
 import {
   UrlInputTab,
@@ -20,12 +21,12 @@ import {
   AppSearchTab,
   AnalysisProgressModal,
 } from '../components/analysis';
-import { MOCK_POLICIES } from '../data/mockPolicies';
+import { analyzePolicy, uploadPolicyPdf, getPolicies } from '../services/api';
 
 const TABS = [
   { id: 'url', label: 'Paste URL', icon: Globe, description: 'Analyze any live privacy policy webpage' },
   { id: 'pdf', label: 'Upload PDF', icon: FileText, description: 'Upload policy document up to 15MB' },
-  { id: 'search', label: 'Search App / Site', icon: Search, description: 'Select from pre-indexed services' },
+  { id: 'search', label: 'Search App / Site', icon: Search, description: 'Select from popular web services' },
 ];
 
 const PERSONAS = [
@@ -41,14 +42,31 @@ const AnalyzePolicy = () => {
   const { isAuthenticated } = useAuth();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('url');
-  const [url, setUrl] = useState('https://www.whatsapp.com/legal/privacy-policy');
+  const [url, setUrl] = useState('');
   const [file, setFile] = useState(null);
   const [selectedApp, setSelectedApp] = useState(null);
   const [persona, setPersona] = useState('student');
   const [enableMonitoring, setEnableMonitoring] = useState(true);
   const [error, setError] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analyzedPolicyName, setAnalyzedPolicyName] = useState('WhatsApp');
+  const [analyzedPolicyName, setAnalyzedPolicyName] = useState('Target Policy');
+  const [recentPolicies, setRecentPolicies] = useState([]);
+  const [createdPolicyId, setCreatedPolicyId] = useState(null);
+
+  useEffect(() => {
+    // Fetch user's existing analyzed policies from live database
+    const loadRecent = async () => {
+      try {
+        const res = await getPolicies();
+        if (res?.data?.policies) {
+          setRecentPolicies(res.data.policies);
+        }
+      } catch (e) {
+        // Not logged in or empty
+      }
+    };
+    if (isAuthenticated) loadRecent();
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const queryUrl = searchParams.get('url');
@@ -75,53 +93,47 @@ const AnalyzePolicy = () => {
         }
 
         let targetName = 'Web Policy';
-        if (queryUrl.includes('spotify')) targetName = 'Spotify';
-        else if (queryUrl.includes('instagram')) targetName = 'Instagram';
-        else if (queryUrl.includes('openai') || queryUrl.includes('chatgpt')) targetName = 'OpenAI ChatGPT';
-        else if (queryUrl.includes('tiktok')) targetName = 'TikTok';
-        else if (queryUrl.includes('netflix')) targetName = 'Netflix';
-        else if (queryUrl.includes('whatsapp')) targetName = 'WhatsApp';
-        else {
-          try {
-            targetName = new URL(queryUrl).hostname.replace(/^www\./, '');
-          } catch (e) {
-            targetName = 'Target Policy';
-          }
+        try {
+          targetName = new URL(queryUrl).hostname.replace(/^www\./, '');
+        } catch (e) {
+          targetName = 'Target Policy';
         }
         setAnalyzedPolicyName(targetName);
-        setIsAnalyzing(true);
+        handleStartAnalysis(null, queryUrl, queryPersona || persona);
       }
     }
   }, [searchParams, isAuthenticated, navigate]);
 
-  const handleStartAnalysis = (e) => {
+  const handleStartAnalysis = async (e, overrideUrl = null, overridePersona = null) => {
     if (e) e.preventDefault();
+    setError('');
+
+    const activeUrl = overrideUrl || url;
+    const activePer = overridePersona || persona;
 
     if (!isAuthenticated) {
       navigate(
-        `/login?url=${encodeURIComponent(url)}&persona=${encodeURIComponent(persona)}&autoAnalyze=true&open=true`
+        `/login?url=${encodeURIComponent(activeUrl)}&persona=${encodeURIComponent(activePer)}&autoAnalyze=true&open=true`
       );
       return;
     }
 
-    let targetName = 'WhatsApp';
+    let targetName = 'Target Policy';
 
     if (activeTab === 'url') {
-      if (!url.trim()) {
+      if (!activeUrl || !activeUrl.trim()) {
         setError('Please enter a valid webpage URL.');
         return;
       }
-      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      if (!activeUrl.startsWith('http://') && !activeUrl.startsWith('https://')) {
         setError('Please enter a URL starting with https:// or http://');
         return;
       }
-      // Infer policy name from URL
-      if (url.includes('spotify')) targetName = 'Spotify';
-      else if (url.includes('instagram')) targetName = 'Instagram';
-      else if (url.includes('openai') || url.includes('chatgpt')) targetName = 'OpenAI ChatGPT';
-      else if (url.includes('tiktok')) targetName = 'TikTok';
-      else if (url.includes('netflix')) targetName = 'Netflix';
-      else targetName = 'WhatsApp';
+      try {
+        targetName = new URL(activeUrl).hostname.replace(/^www\./, '');
+      } catch (err) {
+        targetName = 'Target Webpage';
+      }
     } else if (activeTab === 'pdf') {
       if (!file) {
         setError('Please select or drop a PDF document to analyze.');
@@ -137,20 +149,42 @@ const AnalyzePolicy = () => {
     }
 
     setAnalyzedPolicyName(targetName);
-    setError('');
     setIsAnalyzing(true);
+
+    try {
+      let res;
+      if (activeTab === 'pdf') {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('role', activePer);
+        res = await uploadPolicyPdf(formData);
+      } else {
+        const targetUrl = activeTab === 'search' ? selectedApp.url : activeUrl;
+        res = await analyzePolicy({
+          url: targetUrl,
+          role: activePer,
+          enableMonitoring,
+        });
+      }
+
+      const policyId = res?.data?.policy?.id || res?.data?.policyId;
+      if (policyId) {
+        setCreatedPolicyId(policyId);
+      }
+    } catch (err) {
+      console.error('Analysis error:', err);
+      setIsAnalyzing(false);
+      setError(err?.response?.data?.message || err?.message || 'Error executing policy intelligence analysis.');
+    }
   };
 
   const handleAnalysisComplete = () => {
     setIsAnalyzing(false);
-    // Navigate to Policy Summary for WhatsApp (or matched id)
-    const policyId =
-      analyzedPolicyName.toLowerCase().includes('spotify')
-        ? 'spotify'
-        : analyzedPolicyName.toLowerCase().includes('instagram')
-        ? 'instagram'
-        : 'whatsapp';
-    navigate(`/policy/${policyId}/summary`);
+    if (createdPolicyId) {
+      navigate(`/policy/${createdPolicyId}/summary?persona=${encodeURIComponent(persona)}`);
+    } else {
+      navigate('/dashboard');
+    }
   };
 
   return (
@@ -299,38 +333,46 @@ const AnalyzePolicy = () => {
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-text-tertiary" />
             <h3 className="text-xs font-bold text-text-tertiary uppercase tracking-wider">
-              Recently Analyzed by PrivyLens Community
+              Recently Audited Policies
             </h3>
           </div>
-          <span className="text-xs text-text-tertiary">Verified Models</span>
+          <span className="text-xs text-text-tertiary">Real-Time Intelligence</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-          {MOCK_POLICIES.slice(0, 4).map((item) => (
-            <div
-              key={item.id}
-              onClick={() => {
-                setUrl(item.url);
-                setAnalyzedPolicyName(item.name);
-                setActiveTab('url');
-              }}
-              className="p-3 rounded-xl border border-border bg-page-bg/50 hover:bg-card hover:border-primary/40 transition-all cursor-pointer flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
-                  <Shield className="w-3.5 h-3.5" />
+        {recentPolicies.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            {recentPolicies.slice(0, 4).map((item) => (
+              <div
+                key={item.id}
+                onClick={() => {
+                  navigate(`/policy/${item.id}/summary`);
+                }}
+                className="p-3 rounded-xl border border-border bg-page-bg/50 hover:bg-card hover:border-primary/40 transition-all cursor-pointer flex items-center justify-between group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+                    <Shield className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-text-primary group-hover:text-primary transition-colors truncate max-w-[120px]">
+                      {item.title}
+                    </p>
+                    <p className="text-[10px] text-text-tertiary">
+                      {item.overall_score !== undefined ? `${parseFloat(item.overall_score).toFixed(1)}/10 Score` : 'Audited'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-bold text-text-primary group-hover:text-primary transition-colors">
-                    {item.name}
-                  </p>
-                  <p className="text-[10px] text-text-tertiary">{item.trustScore}/10 Score</p>
-                </div>
+                <ArrowRight className="w-3.5 h-3.5 text-text-tertiary group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
               </div>
-              <ArrowRight className="w-3.5 h-3.5 text-text-tertiary group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-6 text-center border border-dashed border-border rounded-xl">
+            <p className="text-xs text-text-tertiary">
+              No policies analyzed in this session yet. Enter a website URL or drop a PDF above to run your first real-time audit.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Real-Time Multi-Step Progress Modal (Phase 7) */}

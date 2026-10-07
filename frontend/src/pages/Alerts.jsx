@@ -1,7 +1,7 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, BellOff, CheckCircle, RotateCcw } from 'lucide-react';
-import { MOCK_ALERTS } from '../data/mockAlerts';
+import { ChevronRight, BellOff, CheckCircle, RotateCcw, Loader2 } from 'lucide-react';
+import { getAlerts, markAlertAsRead } from '../services/api';
 import {
   AlertsHeader,
   AlertsStatsBar,
@@ -12,7 +12,36 @@ import {
 
 const Alerts = () => {
   // Master alerts list state
-  const [alerts, setAlerts] = useState(MOCK_ALERTS);
+  const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      setLoading(true);
+      try {
+        const res = await getAlerts();
+        const raw = res?.data?.alerts || [];
+        const formatted = raw.map((a) => ({
+          id: a.id,
+          title: a.title,
+          policyName: a.policy_title || 'Monitored Policy',
+          serviceName: a.policy_title || 'Web Service',
+          description: a.message,
+          severity: (a.severity || 'medium').toLowerCase(),
+          type: a.type || 'drift',
+          timestamp: a.created_at ? new Date(a.created_at).toLocaleString() : 'Recently',
+          isRead: Boolean(a.is_read),
+          isResolved: Boolean(a.is_resolved),
+        }));
+        setAlerts(formatted);
+      } catch (err) {
+        setAlerts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAlerts();
+  }, []);
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');

@@ -5,9 +5,9 @@ const AccountDetailsForm = ({ user, onUpdateUser }) => {
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
-    organization: user?.organization || 'Personal Privacy Research',
-    location: user?.location || 'San Francisco, CA',
-    bio: user?.bio || 'Privacy researcher and conscious consumer advocating for digital sovereignty.',
+    organization: user?.organization || '',
+    location: user?.location || '',
+    bio: user?.bio || '',
   });
 
   const [isSaved, setIsSaved] = useState(false);

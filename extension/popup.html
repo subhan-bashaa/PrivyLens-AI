@@ -41,6 +41,20 @@
         </div>
       </div>
 
+      <!-- Simple Privacy Summary Card -->
+      <div class="simple-summary-card" id="simple-summary-card" style="display: none;">
+        <div class="simple-summary-header">
+          <span class="summary-icon">📝</span>
+          <span class="summary-title">Simple Privacy Summary</span>
+        </div>
+        <p class="simple-summary-p" id="simple-summary-text">
+          Loading summary...
+        </p>
+        <div class="simple-highlights" id="simple-highlights">
+          <!-- Populated dynamically: Data collected, sharing, retention, concerns -->
+        </div>
+      </div>
+
       <!-- Person Type / Persona Selector -->
       <div class="persona-section">
         <div class="persona-header">
@@ -74,12 +88,28 @@
         </div>
       </div>
 
-      <button id="btn-analyze" class="btn-analyze">
+      <!-- View on Web App Callout based on Selected Persona -->
+      <div class="extra-info-banner" id="extra-info-banner">
+        <div class="extra-info-text">
+          <span class="extra-info-icon">💡</span>
+          <div>
+            <div class="extra-info-title">Want Extra Information?</div>
+            <div class="extra-info-desc">Explore deep clause breakdown, 11 scorecards & AI chat in our Web App</div>
+          </div>
+        </div>
+        <button type="button" class="btn-extra-web" id="btn-extra-web">
+          <span id="btn-extra-web-text">View on Web App</span>
+          <span class="btn-external-icon">↗</span>
+        </button>
+      </div>
+
+      <!-- Trigger button for unanalyzed pages only -->
+      <button id="btn-analyze" class="btn-analyze" style="display: none;">
         <div class="btn-analyze-content">
           <span class="btn-main-text" id="btn-analyze-text">Analyze as Student</span>
-          <span class="btn-sub-text">Proceed to Login & Webpage</span>
+          <span class="btn-sub-text" id="btn-sub-text">Run Real-Time AI Privacy Audit</span>
         </div>
-        <span class="arrow">→</span>
+        <span class="arrow" id="btn-arrow">⚡</span>
       </button>
     </section>
 

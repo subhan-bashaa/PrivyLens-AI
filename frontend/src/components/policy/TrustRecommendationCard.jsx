@@ -104,18 +104,22 @@ const TrustRecommendationCard = ({ policy }) => {
 
           {/* Synthesis Points */}
           <div className="space-y-2 text-xs sm:text-sm text-text-secondary leading-relaxed">
-            <div className="flex items-start gap-2">
-              <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-              <span>
-                <strong>Data Processing Purpose:</strong> Service requires personal identifiers to provide core communication and authentication functions.
-              </span>
-            </div>
-            <div className="flex items-start gap-2">
-              <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-              <span>
-                <strong>Third-Party Scope:</strong> Interaction telemetry is shared across affiliated entities for analytics and targeted advertising ecosystems.
-              </span>
-            </div>
+            {recommendation.purpose && (
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                <span>
+                  <strong>Data Processing Purpose:</strong> {recommendation.purpose}
+                </span>
+              </div>
+            )}
+            {recommendation.thirdPartyScope && (
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                <span>
+                  <strong>Third-Party Scope:</strong> {recommendation.thirdPartyScope}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Action Row */}

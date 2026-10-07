@@ -8,7 +8,7 @@ import {
   AlertTriangle,
   Award,
 } from 'lucide-react';
-import { generateReportFileContent } from '../../data/mockReports';
+import { generateReportFileContent } from '../../utils/reportTemplates';
 
 const ReportPreviewModal = ({ report, isOpen, onClose }) => {
   useEffect(() => {

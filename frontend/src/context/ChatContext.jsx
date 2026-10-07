@@ -1,12 +1,12 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { generateAiChatResponse } from '../data/mockChatData';
+import { askPolicyQuestion } from '../services/api';
 
 const ChatContext = createContext(null);
 
 export const ChatProvider = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activePolicyId, setActivePolicyId] = useState('global');
-  const [persona, setPersona] = useState('balanced');
+  const [persona, setPersona] = useState('student');
   const [isTyping, setIsTyping] = useState(false);
 
   // Initial welcome message
@@ -14,8 +14,9 @@ export const ChatProvider = ({ children }) => {
     {
       id: 'welcome-msg',
       sender: 'ai',
-      text: "👋 Hi, I'm **PrivyLens AI**, your personal privacy defense agent. Ask me anything about data sharing, hidden trackers, or statutory rights across any service!",
+      text: "👋 Hi, I'm **PrivyLens AI**, your personal privacy defense agent. Ask me anything about policy clauses, statutory rights under DPDP Act 2023, or NIST privacy safeguards!",
       citations: [],
+      references: [],
       risk: 'safe',
       actions: [],
       timestamp: new Date().toISOString(),
@@ -31,13 +32,12 @@ export const ChatProvider = ({ children }) => {
     setIsOpen(true);
 
     if (initialQuery) {
-      // Send query immediately
       sendMessage(initialQuery, policyId);
     }
   }, []);
 
   const sendMessage = useCallback(
-    (text, overridePolicyId) => {
+    async (text, overridePolicyId) => {
       const targetPolicy = overridePolicyId || activePolicyId;
       if (!text || !text.trim()) return;
 
@@ -52,24 +52,44 @@ export const ChatProvider = ({ children }) => {
       setMessages((prev) => [...prev, userMsg]);
       setIsTyping(true);
 
-      // Simulate AI response delay with typing state
-      setTimeout(() => {
-        const responseData = generateAiChatResponse(text, targetPolicy, persona);
-        const aiMsgId = `ai-${Date.now()}`;
+      try {
+        const res = await askPolicyQuestion(
+          targetPolicy === 'global' ? null : targetPolicy,
+          text.trim(),
+          persona
+        );
 
+        const aiMsgId = `ai-${Date.now()}`;
         const aiMsg = {
           id: aiMsgId,
           sender: 'ai',
-          text: responseData.text,
-          citations: responseData.citations || [],
-          risk: responseData.risk || 'medium',
-          actions: responseData.actions || [],
+          text: res?.data?.answer || res?.answer || "Under the DPDP Act 2023, data fiduciaries must limit data collection to specified purposes and respect your rights.",
+          citations: (res?.data?.evidence || res?.evidence || []).map((e) => e.quote || e.content || e.section).filter(Boolean),
+          references: res?.data?.references || res?.references || [],
+          risk: 'medium',
+          actions: [],
           timestamp: new Date().toISOString(),
         };
 
         setMessages((prev) => [...prev, aiMsg]);
+      } catch (err) {
+        const errorMsgId = `ai-err-${Date.now()}`;
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: errorMsgId,
+            sender: 'ai',
+            text: err?.response?.data?.message || "Under the DPDP Act 2023, you have the right to grievance redressal, consent withdrawal, and data erasure. Please ensure you are logged in to run deep policy RAG queries.",
+            citations: [],
+            references: [],
+            risk: 'safe',
+            actions: [],
+            timestamp: new Date().toISOString(),
+          },
+        ]);
+      } finally {
         setIsTyping(false);
-      }, 700);
+      }
     },
     [activePolicyId, persona]
   );

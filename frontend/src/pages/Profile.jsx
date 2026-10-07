@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { getUserStats } from '../services/api';
 import {
   ProfileHeader,
   UserStatsOverview,
@@ -10,6 +12,26 @@ import {
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await getUserStats();
+        if (res?.data?.stats) {
+          setStats(res.data.stats);
+        }
+      } catch {
+        setStats({
+          totalPolicies: 0,
+          monitoredPolicies: 0,
+          unreadAlerts: 0,
+          averageScore: 0.0,
+        });
+      }
+    };
+    fetchStats();
+  }, []);
 
   const handleUpdatePersona = (personaData) => {
     updateUser({
@@ -50,7 +72,7 @@ const Profile = () => {
       <ProfileHeader user={user} onAvatarClick={handleChangeAvatar} />
 
       {/* 2. User Stats Overview */}
-      <UserStatsOverview user={user} />
+      <UserStatsOverview user={user} stats={stats} />
 
       {/* 3. Privacy Persona & Sensitivity Customizer */}
       <PrivacyPersonaCard

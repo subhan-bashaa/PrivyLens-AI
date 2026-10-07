@@ -346,7 +346,7 @@ export const MOCK_POLICIES = [
     id: 'instagram',
     name: 'Instagram',
     category: 'Social Media',
-    url: 'https://help.instagram.com/155833707900388',
+    url: 'https://privacycenter.instagram.com/policy',
     lastAnalyzed: '2026-03-05',
     version: 'v2026.2',
     trustScore: 4.8,

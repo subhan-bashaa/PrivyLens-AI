@@ -320,6 +320,31 @@ body {
   box-shadow: 0 0 30px 0px rgba(16, 185, 129, 0.45), 0 0 12px rgba(34, 211, 238, 0.3);
 }
 
+/* ============================================
+   Keyword Marquee — Right-to-Left Infinite Track
+   ============================================ */
+@keyframes marqueeScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
 
+.keyword-marquee-track {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 1rem;
+  animation: marqueeScroll 30s linear infinite;
+  will-change: transform;
+}
 
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .keyword-marquee-track {
+    animation: none !important;
+  }
+}
 

@@ -5,7 +5,7 @@ import {
   FileCode,
   Zap,
 } from 'lucide-react';
-import { REPORT_TEMPLATES } from '../../data/mockReports';
+import { REPORT_TEMPLATES } from '../../utils/reportTemplates';
 
 const ICON_MAP = {
   FileBarChart,

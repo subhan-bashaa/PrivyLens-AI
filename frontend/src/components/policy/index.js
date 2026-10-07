@@ -4,3 +4,5 @@ export { default as BulletSummaryCard } from './BulletSummaryCard';
 export { default as CategoryScoresList } from './CategoryScoresList';
 export { default as PolicyActionsBar } from './PolicyActionsBar';
 export { default as AskAiAssistantModal } from './AskAiAssistantModal';
+export { default as PersonaPerspectiveCard } from './PersonaPerspectiveCard';
+

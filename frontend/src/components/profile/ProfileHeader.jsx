@@ -12,9 +12,9 @@ const ProfileHeader = ({ user, onAvatarClick }) => {
         <div className="flex items-center gap-4.5">
           {/* Avatar with edit overlay */}
           <div className="relative group shrink-0">
-            {user?.avatar ? (
+            {user?.avatarUrl || user?.avatar_url || user?.avatar ? (
               <img
-                src={user.avatar}
+                src={user.avatarUrl || user.avatar_url || user.avatar}
                 alt={user.name}
                 className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-primary/30 shadow-md"
               />
@@ -40,16 +40,10 @@ const ProfileHeader = ({ user, onAvatarClick }) => {
               <h1 className="text-xl sm:text-2xl font-extrabold text-text-primary tracking-tight">
                 {user?.name || 'Subha'}
               </h1>
-              {user?.accountType === 'Pro' ? (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-primary/10 text-primary border border-primary/25">
-                  <Crown className="w-3 h-3 text-primary" />
-                  Pro Member
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-background-subtle border border-border text-text-secondary">
-                  Free Tier
-                </span>
-              )}
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 border border-primary/20 text-primary">
+                <Shield className="w-3 h-3 text-primary" />
+                Active Account
+              </span>
             </div>
 
             <div className="flex items-center gap-3 text-xs text-text-secondary flex-wrap">

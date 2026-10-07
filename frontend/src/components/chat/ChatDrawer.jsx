@@ -10,14 +10,16 @@ import {
   Sliders,
 } from 'lucide-react';
 import { useChat } from '../../context/ChatContext';
-import { CHAT_SERVICES } from '../../data/mockChatData';
+import { getPolicies } from '../../services/api';
 import ChatMessage from './ChatMessage';
 import ChatSuggestions from './ChatSuggestions';
 
 const PERSONAS = [
-  { id: 'strict', label: 'Strict Guard' },
-  { id: 'balanced', label: 'Balanced' },
-  { id: 'relaxed', label: 'Permissive' },
+  { id: 'student', label: '🎓 Student' },
+  { id: 'parent', label: '👨‍👩‍👧 Parent' },
+  { id: 'employee', label: '💼 Employee' },
+  { id: 'business', label: '🏢 Business' },
+  { id: 'general', label: '👤 General' },
 ];
 
 const ChatDrawer = () => {
@@ -36,8 +38,21 @@ const ChatDrawer = () => {
 
   const [input, setInput] = useState('');
   const [showPersonaMenu, setShowPersonaMenu] = useState(false);
+  const [userPolicies, setUserPolicies] = useState([]);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+
+  useEffect(() => {
+    const fetchAuditedPolicies = async () => {
+      try {
+        const res = await getPolicies();
+        setUserPolicies(res?.data?.policies || []);
+      } catch (err) {
+        setUserPolicies([]);
+      }
+    };
+    fetchAuditedPolicies();
+  }, []);
 
   // Auto-scroll to bottom on new messages or typing state
   useEffect(() => {
@@ -173,9 +188,10 @@ const ChatDrawer = () => {
             onChange={(e) => setActivePolicyId(e.target.value)}
             className="bg-card text-xs font-bold text-text-primary border border-border px-2 py-1 rounded-lg focus:outline-hidden cursor-pointer"
           >
-            {CHAT_SERVICES.map((svc) => (
-              <option key={svc.id} value={svc.id}>
-                {svc.icon} {svc.name}
+            <option value="global">🛡️ Global Standards (DPDP / NIST / GDPR)</option>
+            {userPolicies.map((p) => (
+              <option key={p.id} value={p.id}>
+                📄 {p.title || 'Audited Web Policy'}
               </option>
             ))}
           </select>
@@ -230,7 +246,9 @@ const ChatDrawer = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={`Ask about ${
-              CHAT_SERVICES.find((s) => s.id === activePolicyId)?.name || 'privacy terms'
+              activePolicyId === 'global'
+                ? 'privacy rights, DPDP Act 2023, or NIST safeguards'
+                : (userPolicies.find((p) => p.id === activePolicyId)?.title || 'this policy')
             }...`}
             className="flex-1 bg-card border border-border rounded-xl px-3.5 py-2.5 text-xs text-text-primary placeholder:text-text-tertiary focus:outline-hidden focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all"
           />

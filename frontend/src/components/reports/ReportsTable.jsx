@@ -11,7 +11,7 @@ import {
   Calendar,
   ShieldAlert,
 } from 'lucide-react';
-import { generateReportFileContent } from '../../data/mockReports';
+import { generateReportFileContent } from '../../utils/reportTemplates';
 
 const FORMAT_ICONS = {
   PDF: { icon: FileText, color: 'text-danger', bg: 'bg-danger/10', border: 'border-danger/20' },

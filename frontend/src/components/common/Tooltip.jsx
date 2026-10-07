@@ -27,7 +27,7 @@ const Tooltip = ({
           className={`
             absolute z-50 ${positions[position]}
             px-3 py-1.5 text-xs font-medium
-            bg-text-primary text-text-inverse
+            bg-slate-900 dark:bg-slate-800 text-white border border-slate-700/50
             rounded-lg shadow-lg whitespace-nowrap
             animate-fade-in pointer-events-none
           `}

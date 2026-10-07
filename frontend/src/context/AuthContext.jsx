@@ -1,19 +1,15 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import {
+  loginUser,
+  registerUser,
+  googleLoginUser,
+  getCurrentUser,
+  forgotPasswordRequest,
+  verifyOtpRequest,
+  resetPasswordRequest,
+} from '../services/api';
 
 const AuthContext = createContext(null);
-
-// Mock user for development
-export const MOCK_USER = {
-  id: '1',
-  name: 'Subha',
-  email: 'subha@example.com',
-  avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80',
-  role: 'Student',
-  accountType: 'Pro',
-  createdAt: '2026-01-15',
-  monitoredPoliciesCount: 12,
-  reportsCount: 5,
-};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
@@ -23,84 +19,119 @@ export const AuthProvider = ({ children }) => {
     } catch {
       // fallback
     }
-    return MOCK_USER;
+    return null;
   });
 
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    try {
-      const token = localStorage.getItem('privylens_token');
-      if (token) return true;
-      const saved = localStorage.getItem('privylens_user');
-      if (saved) return true;
-    } catch {
-      // fallback
-    }
-    return true; // default true for developer ease
+    return Boolean(localStorage.getItem('privylens_token'));
   });
 
   const [isLoading, setIsLoading] = useState(false);
 
+  // Validate token on mount if present
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = localStorage.getItem('privylens_token');
+      if (!token) {
+        setIsAuthenticated(false);
+        setUser(null);
+        return;
+      }
+      try {
+        const res = await getCurrentUser();
+        if (res?.data?.user) {
+          setUser(res.data.user);
+          setIsAuthenticated(true);
+          localStorage.setItem('privylens_user', JSON.stringify(res.data.user));
+        }
+      } catch (err) {
+        // Token expired or invalid
+        localStorage.removeItem('privylens_token');
+        localStorage.removeItem('privylens_user');
+        setIsAuthenticated(false);
+        setUser(null);
+      }
+    };
+    checkToken();
+  }, []);
+
   const login = useCallback(async (email, password, rememberMe = true) => {
     setIsLoading(true);
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    const loggedUser = {
-      ...MOCK_USER,
-      email: email || MOCK_USER.email,
-      name: email ? email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : MOCK_USER.name,
-    };
-    setUser(loggedUser);
-    setIsAuthenticated(true);
-    if (rememberMe) {
-      localStorage.setItem('privylens_token', 'mock-jwt-token');
-      localStorage.setItem('privylens_user', JSON.stringify(loggedUser));
+    try {
+      const res = await loginUser({ email, password });
+      const { token, user: loggedUser } = res.data;
+
+      setUser(loggedUser);
+      setIsAuthenticated(true);
+
+      if (rememberMe || true) {
+        localStorage.setItem('privylens_token', token);
+        localStorage.setItem('privylens_user', JSON.stringify(loggedUser));
+
+        // Sync with Chrome Extension storage if available
+        if (typeof chrome !== 'undefined' && chrome?.storage?.local) {
+          chrome.storage.local.set({ privylens_token: token, privylens_user: loggedUser });
+        }
+      }
+
+      setIsLoading(false);
+      return loggedUser;
+    } catch (err) {
+      setIsLoading(false);
+      throw err;
     }
-    setIsLoading(false);
-    return loggedUser;
   }, []);
 
-  const loginWithGoogle = useCallback(async () => {
+  const register = useCallback(async (name, email, password, role = 'student') => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    const googleUser = {
-      id: 'g_' + Math.floor(Math.random() * 10000),
-      name: 'Subha Mukherjee',
-      email: 'subha.google@example.com',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-      role: 'Student',
-      accountType: 'Pro',
-      createdAt: '2026-02-10',
-      monitoredPoliciesCount: 8,
-      reportsCount: 3,
-    };
-    setUser(googleUser);
-    setIsAuthenticated(true);
-    localStorage.setItem('privylens_token', 'mock-google-token');
-    localStorage.setItem('privylens_user', JSON.stringify(googleUser));
-    setIsLoading(false);
-    return googleUser;
+    try {
+      const res = await registerUser({ name, email, password, role });
+      const { token, user: newUser } = res.data;
+
+      setUser(newUser);
+      setIsAuthenticated(true);
+
+      localStorage.setItem('privylens_token', token);
+      localStorage.setItem('privylens_user', JSON.stringify(newUser));
+
+      if (typeof chrome !== 'undefined' && chrome?.storage?.local) {
+        chrome.storage.local.set({ privylens_token: token, privylens_user: newUser });
+      }
+
+      setIsLoading(false);
+      return newUser;
+    } catch (err) {
+      setIsLoading(false);
+      throw err;
+    }
   }, []);
 
-  const register = useCallback(async (name, email, password, role = 'Student') => {
+  const loginWithGoogle = useCallback(async ({ credential, accessToken, role = 'general' }) => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    const newUser = {
-      id: String(Date.now()),
-      name,
-      email,
-      avatar: null,
-      role,
-      accountType: 'Free',
-      createdAt: new Date().toISOString().split('T')[0],
-      monitoredPoliciesCount: 0,
-      reportsCount: 0,
-    };
-    setUser(newUser);
-    setIsAuthenticated(true);
-    localStorage.setItem('privylens_token', 'mock-jwt-token');
-    localStorage.setItem('privylens_user', JSON.stringify(newUser));
-    setIsLoading(false);
-    return newUser;
+    try {
+      const res = await googleLoginUser({
+        credential,
+        accessToken,
+        role,
+      });
+      const { token, user: loggedUser } = res.data;
+
+      setUser(loggedUser);
+      setIsAuthenticated(true);
+
+      localStorage.setItem('privylens_token', token);
+      localStorage.setItem('privylens_user', JSON.stringify(loggedUser));
+
+      if (typeof chrome !== 'undefined' && chrome?.storage?.local) {
+        chrome.storage.local.set({ privylens_token: token, privylens_user: loggedUser });
+      }
+
+      setIsLoading(false);
+      return loggedUser;
+    } catch (err) {
+      setIsLoading(false);
+      throw err;
+    }
   }, []);
 
   const logout = useCallback(() => {
@@ -108,13 +139,45 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
     localStorage.removeItem('privylens_token');
     localStorage.removeItem('privylens_user');
+    if (typeof chrome !== 'undefined' && chrome?.storage?.local) {
+      chrome.storage.local.remove(['privylens_token', 'privylens_user']);
+    }
   }, []);
 
-  const resetPassword = useCallback(async (email) => {
+  const requestPasswordReset = useCallback(async (email) => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    return true;
+    try {
+      const res = await forgotPasswordRequest(email);
+      setIsLoading(false);
+      return res;
+    } catch (err) {
+      setIsLoading(false);
+      throw err;
+    }
+  }, []);
+
+  const verifyResetOtp = useCallback(async (email, otp) => {
+    setIsLoading(true);
+    try {
+      const res = await verifyOtpRequest(email, otp);
+      setIsLoading(false);
+      return res;
+    } catch (err) {
+      setIsLoading(false);
+      throw err;
+    }
+  }, []);
+
+  const resetPassword = useCallback(async (email, otp, newPassword) => {
+    setIsLoading(true);
+    try {
+      const res = await resetPasswordRequest(email, otp, newPassword);
+      setIsLoading(false);
+      return res;
+    } catch (err) {
+      setIsLoading(false);
+      throw err;
+    }
   }, []);
 
   const updateUser = useCallback((updates) => {
@@ -130,9 +193,11 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     isLoading,
     login,
-    loginWithGoogle,
     register,
+    loginWithGoogle,
     logout,
+    requestPasswordReset,
+    verifyResetOtp,
     resetPassword,
     updateUser,
   };

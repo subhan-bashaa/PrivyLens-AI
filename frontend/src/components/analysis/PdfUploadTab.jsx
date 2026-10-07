@@ -41,16 +41,6 @@ const PdfUploadTab = ({ file, setFile, error, setError }) => {
     setError('');
   };
 
-  const handleLoadSample = () => {
-    const mockPdf = new File(
-      ['Sample Privacy Policy Content for testing analysis engine'],
-      'WhatsApp_Privacy_Policy_v2026.pdf',
-      { type: 'application/pdf' }
-    );
-    setFile(mockPdf);
-    setError('');
-  };
-
   return (
     <div className="space-y-4">
       {!file ? (
@@ -121,18 +111,6 @@ const PdfUploadTab = ({ file, setFile, error, setError }) => {
       {error && (
         <p className="text-xs text-danger font-medium animate-fade-in">{error}</p>
       )}
-
-      {/* Sample PDF quick button */}
-      <div className="flex items-center justify-between pt-1 text-xs">
-        <span className="text-text-tertiary">Don't have a PDF right now?</span>
-        <button
-          type="button"
-          onClick={handleLoadSample}
-          className="text-primary hover:text-primary-dark font-medium underline cursor-pointer"
-        >
-          Load Sample PDF Document
-        </button>
-      </div>
     </div>
   );
 };

@@ -20,10 +20,13 @@ Real-time browsing companion for **PrivyLens AI** that automatically detects pri
 
 ---
 
-## ✨ Features
+## ✨ Production Features
 
-- **Automatic Privacy Policy Slide-in**: When you browse legal pages or policies (e.g., `/privacy`, `/terms`), a non-intrusive floating Cyber Emerald card slides in on the bottom-right.
-- **Cookie Banner Pre-Warning**: Warns you with an AI risk badge when complex consent modals try to push "Accept All".
-- **Shadow DOM Isolation**: Rendered in a closed shadow root so it never interferes with the host website's styles or layout.
-- **1-Click Web App Deep Link**: Click **"View AI Summary"** or **"Analyze in PrivyLens Web App"** to auto-load the target page into `http://localhost:5173/analyze` and trigger real-time AI extraction.
+- **Zero Dummy Data**: All audits, risk scores, and assessments are derived from live LLM intelligence and real Neon PostgreSQL database records.
+- **5-Persona Tailored Intelligence**: Choose between **Student**, **Parent**, **Employee**, **Business**, and **General** personas directly from the popup or injected banner to get persona-specific impact analysis.
+- **Automatic Privacy Policy Slide-in**: When browsing legal pages or policies (e.g., `/privacy`, `/terms`), a non-intrusive floating Cyber Emerald card slides in on the top-right.
+- **Dynamic Cookie Banner Pre-Warning**: Extracts real text tokens from detected cookie consent dialogs and warns against predatory trackers and telemetry before you click "Accept All".
+- **Shadow DOM Isolation**: Rendered in an isolated shadow root so it never interferes with the host website's styles or layout.
+- **Direct Backend & Database Integration**: Connects to the live PrivyLens backend (`http://localhost:5000/api`) to check if the current domain/URL has already been audited, showing the real trust score and risk tier.
+- **1-Click Deep Link to Analysis**: Direct deep-link routes to `http://localhost:5173/login?url=...&persona=...&autoAnalyze=true` to initiate full deterministic AI fact extraction, 11-category weighted risk scoring, and legal reference mapping (DPDP Act 2023, DPDP Rules 2025, NIST Privacy Framework).
 - **Customizable Privacy Controls**: Toggle policy detection, cookie detection, or mute sites directly from the extension toolbar popup.
